@@ -18,7 +18,7 @@
             </template>
         </a-table>
     </div>
-    <ModalCreateCloth :visible="visible" />
+    <ModalCreateCloth v-model="visible" />
 </template>
 
 <script>

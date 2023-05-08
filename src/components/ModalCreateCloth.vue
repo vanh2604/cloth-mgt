@@ -2,7 +2,7 @@
     <div>
         <a-modal
                 title="Add Data"
-                v-model:visible="visible"
+                v-model:visible="value"
                 @ok="handleSubmit"
                 @cancel="handleCancel"
         >
@@ -51,11 +51,22 @@ import axios from 'axios'
 export default defineComponent({
     name: 'AddDataModal',
     props: {
-        visible: {
+        modelValue: {
             type: Boolean,
             default: false
         }
     },
+  emits: ['update:modelValue'],
+  computed: {
+    value: {
+      get() {
+        return this.modelValue
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      }
+    }
+  },
     components: {
         'a-modal': Modal,
         'a-button': Button,
@@ -66,7 +77,7 @@ export default defineComponent({
         'a-upload': Upload,
         UploadOutlined
     },
-    setup() {
+    setup(props,{emit}) {
         const form = ref(null)
         const formData = reactive({
             name: '',
@@ -108,6 +119,7 @@ export default defineComponent({
             formData.name = ''
             formData.description = ''
             formData.image = null
+            emit('update:modelValue',false)
         }
 
         return {
