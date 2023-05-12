@@ -1,24 +1,26 @@
 <template>
-    <div>
-        <a-button type="primary" @click="visible = true">Add Data</a-button>
+    <div class="container">
+        <div class="button-style">
+            <a-button type="primary" @click="state.visible = true">Add Data</a-button>
+        </div>
+        <div>
+            <a-table :columns="state.columns" :data-source="dataSource">
+                <template #imageRender="{record}">
+                    <img :width="300" :height="300" :src="record.image[0].imageUrl" />
+                </template>
+                <template #action="{ _, record }">
+                    <a-popconfirm
+                        title="Are you sure you want to delete this data?"
+                        ok-type="danger"
+                        :onConfirm="() => handleDelete(record.id)"
+                    >
+                        <a-button type="link" danger>Delete</a-button>
+                    </a-popconfirm>
+                </template>
+            </a-table>
+        </div>
     </div>
-    <div>
-        <a-table :columns="columns" :data-source="dataSource">
-            <template #imageRender="{record}">
-                <img :width="300" :height="300" :src="record.image[0].imageUrl" />
-            </template>
-            <template #action="{ text, record }">
-                <a-popconfirm
-                    title="Are you sure you want to delete this data?"
-                    ok-type="danger"
-                    onConfirm="handleDelete(record.id)"
-                >
-                    <a-button type="link" danger>Delete</a-button>
-                </a-popconfirm>
-            </template>
-        </a-table>
-    </div>
-    <ModalCreateCloth v-model="visible" />
+    <ModalCreateCloth v-model="state.visible" />
 </template>
 
 <script>
@@ -27,12 +29,15 @@ import {message, Table, Popconfirm, Button} from 'ant-design-vue'
 import {Image} from "ant-design-vue";
 import ModalCreateCloth from "@/components/ModalCreateCloth.vue";
 import axios from 'axios'
+import useCloth from "@/uses/useCloth";
 
 export default defineComponent({
+    // eslint-disable-next-line vue/multi-word-component-names,vue/no-reserved-component-names
     name: 'Table',
     components: {
         'a-button' : Button,
         'a-table': Table,
+        // eslint-disable-next-line vue/no-unused-components
         'a-image': Image,
         'a-popconfirm': Popconfirm,
         ModalCreateCloth
@@ -65,29 +70,33 @@ export default defineComponent({
                     slots: {customRender: 'action'}
                 }
             ],
-            dataSource: [],
         })
 
-        const fetchData = async () => {
-            const response = await fetch('http://ec2-13-215-140-47.ap-southeast-1.compute.amazonaws.com:8080/api/clothes/getAll')
-            const data = await response.json()
-            state.dataSource = data
-            console.log(state.dataSource)
-        }
-        const handleDelete = async (id) => {
-            try {
-                await axios.delete(`/api/clothes/delete/${id}`)
-                message.success('Data deleted successfully!')
-                await fetchData()
-            } catch (error) {
-                message.error('Error deleting data')
-            }
-        }
+        const {  dataSource, fetchData, handleDelete } = useCloth()
+
         onMounted(() => {
             fetchData()
         })
 
-        return toRefs(state)
+        return {
+            state,
+            handleDelete,
+            dataSource,
+            fetchData,
+        }
     },
 })
 </script>
+
+<style lang="css">
+.container {
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.button-style {
+    float: right;
+    margin-bottom: 24px;
+    margin-top: 24px;
+}
+</style>
